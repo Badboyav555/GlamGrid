@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-accent: #ff4d8d;
+            --gradient-pink: linear-gradient(135deg, #d81b60, #ff4d8d);
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--bg-card);
+            padding: 30px 20px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            background: var(--gradient-pink);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-menu { list-style: none; }
+
+        .sidebar-menu li {
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-menu li.active {
+            background: rgba(216,27,96,0.1);
+            color: var(--pink-accent);
+        }
+
+        .main-content { flex: 1; padding: 30px; }
+
+        .order-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .status-select {
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            background: var(--gradient-pink);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">GlamGrid Admin</div>
+        <ul class="sidebar-menu">
+            <li onclick="window.location.href='admin.html'"><i class="fas fa-chart-bar"></i> Dashboard</li>
+            <li onclick="window.location.href='admin-products.html'"><i class="fas fa-box"></i> Products</li>
+            <li class="active"><i class="fas fa-shopping-cart"></i> Orders</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1 style="margin-bottom:30px;">Order Management</h1>
+        <div id="ordersList"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        async function loadOrders() {
+            const orders = await fetchAllOrders();
+            const ordersList = document.getElementById('ordersList');
+
+            ordersList.innerHTML = orders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <strong>Order #${order.id.substring(0, 8)}</strong>
+                            <span style="color:#666; margin-left:10px;">${order.address?.fullName || 'N/A'}</span>
+                        </div>
+                        <div>
+                            <select class="status-select" onchange="updateStatus('${order.id}', this.value)">
+                                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="packed" ${order.status === 'packed' ? 'selected' : ''}>Packed</option>
+                                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <strong>Address:</strong> ${order.address?.house}, ${order.address?.area}, ${order.address?.city} - ${order.address?.pincode}
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <strong>Phone:</strong> ${order.address?.phone}
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <strong>Items:</strong>
+                        ${order.items?.map(item => `${item.name} x${item.quantity}`).join(', ')}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:18px; font-weight:700; color:var(--pink-accent);">${formatPrice(order.total_amount)}</span>
+                        <span style="color:#666;">${new Date(order.created_at).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.updateStatus = async function(orderId, status) {
+            await updateOrderStatus(orderId, status);
+            showToast('Status updated!');
+        };
+
+        loadOrders();
+    </script>
+</body>
+</html>
