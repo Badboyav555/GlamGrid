@@ -1,0 +1,158 @@
+// config.js - Save this file and include in all pages
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Helper Functions
+async function getCurrentUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+}
+
+async function fetchProducts(category = null) {
+    let query = supabase.from('products').select('*').eq('active', true);
+    if (category && category !== 'all') query = query.eq('category', category);
+    const { data } = await query;
+    return data || [];
+}
+
+async function fetchProductById(id) {
+    const { data } = await supabase.from('products').select('*').eq('id', id).single();
+    return data;
+}
+
+async function fetchOrders(userId) {
+    const { data } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+    return data || [];
+}
+
+async function createOrder(orderData) {
+    const { data, error } = await supabase.from('orders').insert(orderData).select();
+    if (error) throw error;
+    return data[0];
+}
+
+async function updateOrderStatus(orderId, status) {
+    const { error } = await supabase
+        .from('orders')
+        .update({ status, updated_at: new Date() })
+        .eq('id', orderId);
+    if (error) throw error;
+}
+
+async function fetchUserProfile(userId) {
+    const { data } = await supabase.from('users').select('*').eq('id', userId).single();
+    return data;
+}
+
+async function updateUserProfile(userId, updates) {
+    const { error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', userId);
+    if (error) throw error;
+}
+
+async function fetchAllOrders() {
+    const { data } = await supabase
+        .from('orders')
+        .select('*, users(name, email)')
+        .order('created_at', { ascending: false });
+    return data || [];
+}
+
+async function fetchAllUsers() {
+    const { data } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+    return data || [];
+}
+
+async function insertProduct(productData) {
+    const { data, error } = await supabase.from('products').insert(productData).select();
+    if (error) throw error;
+    return data[0];
+}
+
+async function updateProduct(productId, updates) {
+    const { error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', productId);
+    if (error) throw error;
+}
+
+async function deleteProduct(productId) {
+    const { error } = await supabase.from('products').delete().eq('id', productId);
+    if (error) throw error;
+}
+
+// Cart & Wishlist (LocalStorage)
+function getCart() {
+    return JSON.parse(localStorage.getItem('cart') || '[]');
+}
+
+function saveCart(cart) {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('cartCount', cart.length);
+}
+
+function getWishlist() {
+    return JSON.parse(localStorage.getItem('wishlist') || '[]');
+}
+
+function saveWishlist(wishlist) {
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    localStorage.setItem('wishlistCount', wishlist.length);
+}
+
+// Toast Notification
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f1f26;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        z-index: 10000;
+        font-weight: 600;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+        animation: slideDown 0.4s ease;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+// Check Referral
+function checkReferralCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        localStorage.setItem('referralCode', refCode);
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 30);
+        localStorage.setItem('referralExpiry', expiry.toISOString());
+    }
+}
+
+// Format Price
+function formatPrice(price) {
+    return '₹' + Number(price).toLocaleString('en-IN');
+}
+
+// Calculate Discount
+function calculateDiscount(original, discounted) {
+    return Math.round(((original - discounted) / original) * 100);
+}
