@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Product Details - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-primary: #d81b60;
+            --pink-accent: #ff4d8d;
+            --gradient-pink: linear-gradient(135deg, #d81b60, #ff4d8d);
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding-bottom: 100px;
+        }
+
+        .app-container { max-width: 480px; margin: 0 auto; }
+
+        .image-slider {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .slider-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slider-image { min-width: 100%; height: 100%; object-fit: cover; }
+
+        .back-btn, .share-btn {
+            position: absolute;
+            top: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            color: white;
+            font-size: 18px;
+            border: none;
+        }
+
+        .back-btn { left: 16px; }
+        .share-btn { right: 16px; }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slider-dot.active {
+            background: var(--pink-accent);
+            width: 24px;
+            border-radius: 10px;
+        }
+
+        .product-details {
+            padding: 20px;
+            background: var(--bg-primary);
+            border-radius: 24px 24px 0 0;
+            margin-top: -20px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .product-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+
+        .price-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .current-price { font-size: 32px; font-weight: 800; color: var(--pink-accent); }
+        .original-price { font-size: 18px; color: #666; text-decoration: line-through; }
+
+        .discount-badge {
+            background: rgba(216, 27, 96, 0.2);
+            color: var(--pink-accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-row i { color: var(--pink-accent); width: 20px; }
+
+        .description {
+            margin: 16px 0;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .size-selector { margin: 20px 0; }
+        .size-label { font-weight: 600; margin-bottom: 10px; font-size: 14px; }
+
+        .size-options { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .size-btn {
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .size-btn.selected {
+            background: var(--gradient-pink);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(216, 27, 96, 0.3);
+        }
+
+        .sticky-bottom {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 448px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--gradient-pink);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            flex: 2;
+            box-shadow: 0 8px 25px rgba(216, 27, 96, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="image-slider" id="imageSlider">
+            <button class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+            <button class="share-btn" onclick="shareProduct()"><i class="fas fa-share-alt"></i></button>
+            <div class="slider-track" id="sliderTrack"></div>
+            <div class="slider-dots" id="sliderDots"></div>
+        </div>
+
+        <div class="product-details">
+            <h1 class="product-title" id="productTitle">Loading...</h1>
+            <div class="price-section">
+                <span class="current-price" id="currentPrice">₹0</span>
+                <span class="original-price" id="originalPrice">₹0</span>
+                <span class="discount-badge" id="discountBadge">0% OFF</span>
+            </div>
+            <div class="info-row"><i class="fas fa-truck"></i> Free Delivery</div>
+            <div class="info-row"><i class="fas fa-money-bill-wave"></i> Cash on Delivery</div>
+            <div class="info-row"><i class="fas fa-undo"></i> 7 Days Return</div>
+
+            <div class="size-selector">
+                <div class="size-label">Select Size</div>
+                <div class="size-options" id="sizeOptions"></div>
+            </div>
+
+            <div class="description" id="productDescription"></div>
+        </div>
+
+        <div class="sticky-bottom">
+            <button class="btn-secondary" onclick="addToCart()"><i class="fas fa-shopping-bag"></i> Add</button>
+            <button class="btn-primary" onclick="buyNow()">Buy Now</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        let currentProduct = null;
+        let selectedSize = 'S';
+        let currentImageIndex = 0;
+
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                currentProduct = await fetchProductById(productId);
+                if (!currentProduct) loadDemoProduct();
+            } catch (error) {
+                loadDemoProduct();
+            }
+            renderProduct();
+        }
+
+        function loadDemoProduct() {
+            currentProduct = {
+                id: '1',
+                name: 'Embroidered Silk Kurta',
+                description: 'Beautiful hand-embroidered silk kurta with intricate designs. Perfect for festive occasions.',
+                original_price: 2999,
+                discounted_price: 999,
+                images: [
+                    'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
+                    'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600'
+                ],
+                sizes: ['S', 'M', 'L', 'XL']
+            };
+        }
+
+        function renderProduct() {
+            document.getElementById('productTitle').textContent = currentProduct.name;
+            document.getElementById('currentPrice').textContent = formatPrice(currentProduct.discounted_price);
+            document.getElementById('originalPrice').textContent = formatPrice(currentProduct.original_price);
+            
+            const discount = calculateDiscount(currentProduct.original_price, currentProduct.discounted_price);
+            document.getElementById('discountBadge').textContent = `${discount}% OFF`;
+            document.getElementById('productDescription').textContent = currentProduct.description || 'Premium quality product';
+
+            const images = currentProduct.images || ['https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600'];
+            document.getElementById('sliderTrack').innerHTML = images.map(img => 
+                `<img src="${img}" alt="Product" class="slider-image">`
+            ).join('');
+
+            document.getElementById('sliderDots').innerHTML = images.map((_, i) => 
+                `<div class="slider-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`
+            ).join('');
+
+            const sizes = currentProduct.sizes || ['S', 'M', 'L', 'XL'];
+            document.getElementById('sizeOptions').innerHTML = sizes.map(size => 
+                `<button class="size-btn ${size === 'S' ? 'selected' : ''}" onclick="selectSize('${size}')">${size}</button>`
+            ).join('');
+
+            setupTouchSlider();
+        }
+
+        function setupTouchSlider() {
+            const slider = document.getElementById('imageSlider');
+            let startX = 0;
+
+            slider.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+
+            slider.addEventListener('touchend', (e) => {
+                const diff = startX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 50) {
+                    const images = currentProduct.images || [];
+                    if (diff > 0 && currentImageIndex < images.length - 1) {
+                        currentImageIndex++;
+                    } else if (diff < 0 && currentImageIndex > 0) {
+                        currentImageIndex--;
+                    }
+                    goToSlide(currentImageIndex);
+                }
+            });
+        }
+
+        window.goToSlide = function(index) {
+            currentImageIndex = index;
+            document.getElementById('sliderTrack').style.transform = `translateX(-${index * 100}%)`;
+            document.querySelectorAll('.slider-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        };
+
+        window.selectSize = function(size) {
+            selectedSize = size;
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.textContent === size);
+            });
+        };
+
+        window.addToCart = function() {
+            let cart = getCart();
+            const existing = cart.find(item => item.id === currentProduct.id && item.size === selectedSize);
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    price: currentProduct.discounted_price,
+                    image: currentProduct.images?.[0] || '',
+                    size: selectedSize,
+                    quantity: 1
+                });
+            }
+            
+            saveCart(cart);
+            showToast('Added to cart!');
+        };
+
+        window.buyNow = async function() {
+            const user = await getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html?redirect=checkout.html';
+                return;
+            }
+            addToCart();
+            window.location.href = 'checkout.html';
+        };
+
+        window.shareProduct = function() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: currentProduct.name, url });
+            } else {
+                navigator.clipboard.writeText(url);
+                showToast('Link copied!');
+            }
+        };
+
+        loadProduct();
+    </script>
+</body>
+</html>
