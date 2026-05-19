@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Profile - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-accent: #ff4d8d;
+            --gradient-pink: linear-gradient(135deg, #d81b60, #ff4d8d);
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
+
+        .profile-header { text-align: center; padding: 30px 0; }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gradient-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+        }
+
+        .user-name { font-size: 22px; font-weight: 700; }
+        .user-email { color: var(--text-secondary); font-size: 14px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--pink-accent); }
+        .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .menu-item i { width: 24px; color: var(--pink-accent); }
+
+        .logout-btn {
+            width: 100%;
+            padding: 16px;
+            background: rgba(244,67,54,0.1);
+            border: 1px solid rgba(244,67,54,0.3);
+            border-radius: 50px;
+            color: #F44336;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="profile-header">
+            <div class="avatar"><i class="fas fa-user"></i></div>
+            <div class="user-name" id="userName">User</div>
+            <div class="user-email" id="userEmail">user@email.com</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="orderCount">0</div>
+                <div class="stat-label">Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="wishlistCount">0</div>
+                <div class="stat-label">Wishlist</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="earnings">₹0</div>
+                <div class="stat-label">Earnings</div>
+            </div>
+        </div>
+
+        <div class="menu-item" onclick="window.location.href='orders.html'">
+            <i class="fas fa-box"></i> My Orders
+        </div>
+        <div class="menu-item" onclick="window.location.href='refer.html'">
+            <i class="fas fa-share-alt"></i> Refer & Earn
+        </div>
+        <div class="menu-item" onclick="window.location.href='wishlist.html'">
+            <i class="fas fa-heart"></i> My Wishlist
+        </div>
+
+        <button class="logout-btn" onclick="signOut()">Logout</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        async function loadProfile() {
+            const user = await getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('userName').textContent = user.user_metadata?.name || 'User';
+            document.getElementById('userEmail').textContent = user.email || '';
+
+            try {
+                const profile = await fetchUserProfile(user.id);
+                if (profile) {
+                    document.getElementById('earnings').textContent = formatPrice(profile.total_earnings || 0);
+                }
+            } catch (error) {
+                console.log('Profile load error');
+            }
+
+            const wishlist = getWishlist();
+            document.getElementById('wishlistCount').textContent = wishlist.length;
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>
