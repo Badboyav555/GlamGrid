@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Checkout - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-accent: #ff4d8d;
+            --gradient-pink: linear-gradient(135deg, #d81b60, #ff4d8d);
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 120px;
+        }
+
+        .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        .page-title { font-size: 24px; font-weight: 700; }
+        .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 16px; color: var(--pink-accent); }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: white;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .form-input:focus { outline: none; border-color: var(--pink-accent); }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .order-summary {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 16px;
+            margin-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--pink-accent);
+        }
+
+        .payment-method {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 12px;
+            border: 2px solid var(--pink-accent);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .place-order-btn {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 448px;
+            padding: 18px;
+            background: var(--gradient-pink);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(216, 27, 96, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <button class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+            <h1 class="page-title">Checkout</h1>
+        </div>
+
+        <h3 class="section-title">📍 Delivery Address</h3>
+        
+        <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-input" id="fullName" placeholder="Enter full name" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" class="form-input" id="phone" placeholder="10-digit number" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Alternate Phone</label>
+                <input type="tel" class="form-input" id="altPhone" placeholder="Optional">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">House / Flat / Building *</label>
+            <input type="text" class="form-input" id="house" placeholder="House number, building name" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Area / Street / Colony *</label>
+            <input type="text" class="form-input" id="area" placeholder="Area or street name" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Landmark</label>
+            <input type="text" class="form-input" id="landmark" placeholder="Nearby landmark">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">City *</label>
+                <input type="text" class="form-input" id="city" placeholder="City" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">State *</label>
+                <input type="text" class="form-input" id="state" placeholder="State" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Pincode *</label>
+                <input type="text" class="form-input" id="pincode" placeholder="6-digit pincode" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Country</label>
+                <input type="text" class="form-input" id="country" value="India" readonly>
+            </div>
+        </div>
+
+        <h3 class="section-title">💳 Payment Method</h3>
+        <div class="payment-method">
+            <i class="fas fa-money-bill-wave" style="color: var(--pink-accent); font-size: 24px;"></i>
+            <div>
+                <div style="font-weight: 600;">Cash on Delivery</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Pay when you receive</div>
+            </div>
+        </div>
+
+        <div class="order-summary">
+            <h4 style="margin-bottom: 12px;">Order Summary</h4>
+            <div id="orderItems"></div>
+            <div class="order-total">
+                <span>Total Amount</span>
+                <span id="finalTotal">₹0</span>
+            </div>
+        </div>
+
+        <button class="place-order-btn" onclick="placeOrder()">Place Order</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        const cart = getCart();
+        let totalAmount = 0;
+
+        function renderOrderSummary() {
+            const orderItemsDiv = document.getElementById('orderItems');
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalAmount += itemTotal;
+                orderItemsDiv.innerHTML += `
+                    <div class="order-item">
+                        <span>${item.name} (x${item.quantity})</span>
+                        <span>${formatPrice(itemTotal)}</span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('finalTotal').textContent = formatPrice(totalAmount);
+        }
+
+        window.placeOrder = async function() {
+            const user = await getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html?redirect=checkout.html';
+                return;
+            }
+
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const house = document.getElementById('house').value;
+            const area = document.getElementById('area').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const pincode = document.getElementById('pincode').value;
+
+            if (!fullName || !phone || !house || !area || !city || !state || !pincode) {
+                showToast('Please fill all required fields');
+                return;
+            }
+
+            const orderData = {
+                user_id: user.id,
+                address: {
+                    fullName,
+                    phone,
+                    altPhone: document.getElementById('altPhone').value,
+                    house,
+                    area,
+                    landmark: document.getElementById('landmark').value,
+                    city,
+                    state,
+                    pincode,
+                    country: 'India'
+                },
+                items: cart,
+                total_amount: totalAmount,
+                referral_code: localStorage.getItem('referralCode') || '',
+                status: 'pending'
+            };
+
+            try {
+                const order = await createOrder(orderData);
+                localStorage.removeItem('cart');
+                localStorage.setItem('cartCount', '0');
+                showToast('Order placed successfully!');
+                setTimeout(() => {
+                    window.location.href = `orders.html?id=${order.id}`;
+                }, 500);
+            } catch (error) {
+                showToast('Failed to place order: ' + error.message);
+            }
+        };
+
+        renderOrderSummary();
+    </script>
+</body>
+</html>
