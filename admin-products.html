@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Products - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-accent: #ff4d8d;
+            --gradient-pink: linear-gradient(135deg, #d81b60, #ff4d8d);
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--bg-card);
+            padding: 30px 20px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            background: var(--gradient-pink);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-menu { list-style: none; }
+
+        .sidebar-menu li {
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-menu li.active {
+            background: rgba(216,27,96,0.1);
+            color: var(--pink-accent);
+        }
+
+        .main-content { flex: 1; padding: 30px; }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            margin-right: 10px;
+        }
+
+        .btn-primary { background: var(--gradient-pink); color: white; }
+        .btn-danger { background: #F44336; color: white; }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+        }
+
+        .product-list { margin-top: 20px; }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">GlamGrid Admin</div>
+        <ul class="sidebar-menu">
+            <li onclick="window.location.href='admin.html'"><i class="fas fa-chart-bar"></i> Dashboard</li>
+            <li class="active"><i class="fas fa-box"></i> Products</li>
+            <li onclick="window.location.href='admin-orders.html'"><i class="fas fa-shopping-cart"></i> Orders</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1 style="margin-bottom:30px;">Product Management</h1>
+        
+        <div style="background:var(--bg-card); border-radius:20px; padding:24px; margin-bottom:30px;">
+            <h3 id="formTitle">Add New Product</h3>
+            <div class="form-group">
+                <label class="form-label">Product Name</label>
+                <input type="text" class="form-input" id="productName">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Original Price</label>
+                <input type="number" class="form-input" id="originalPrice">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Discounted Price</label>
+                <input type="number" class="form-input" id="discountedPrice">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input" id="productCategory">
+                    <option value="women">Women</option>
+                    <option value="men">Men</option>
+                    <option value="kids">Kids</option>
+                    <option value="accessories">Accessories</option>
+                    <option value="footwear">Footwear</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input" id="productDescription" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            <input type="hidden" id="editingId">
+        </div>
+
+        <h2>All Products</h2>
+        <div class="product-list" id="productList"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        async function loadProducts() {
+            const products = await fetchProducts();
+            const list = document.getElementById('productList');
+            
+            list.innerHTML = products.map(p => `
+                <div class="product-item">
+                    <div>
+                        <strong>${p.name}</strong>
+                        <span style="color:#666; margin-left:10px;">${formatPrice(p.discounted_price)}</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="editProduct('${p.id}')">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteProductById('${p.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.saveProduct = async function() {
+            const productData = {
+                name: document.getElementById('productName').value,
+                original_price: parseFloat(document.getElementById('originalPrice').value),
+                discounted_price: parseFloat(document.getElementById('discountedPrice').value),
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDescription').value,
+                images: ['https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400'],
+                active: true
+            };
+
+            const editingId = document.getElementById('editingId').value;
+
+            try {
+                if (editingId) {
+                    await updateProduct(editingId, productData);
+                } else {
+                    await insertProduct(productData);
+                }
+                
+                clearForm();
+                loadProducts();
+                showToast('Product saved!');
+            } catch (error) {
+                showToast('Error: ' + error.message);
+            }
+        };
+
+        window.editProduct = async function(id) {
+            const product = await fetchProductById(id);
+            document.getElementById('productName').value = product.name;
+            document.getElementById('originalPrice').value = product.original_price;
+            document.getElementById('discountedPrice').value = product.discounted_price;
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productDescription').value = product.description || '';
+            document.getElementById('editingId').value = id;
+            document.getElementById('formTitle').textContent = 'Edit Product';
+        };
+
+        window.deleteProductById = async function(id) {
+            if (confirm('Delete this product?')) {
+                await deleteProduct(id);
+                loadProducts();
+                showToast('Product deleted!');
+            }
+        };
+
+        function clearForm() {
+            document.getElementById('productName').value = '';
+            document.getElementById('originalPrice').value = '';
+            document.getElementById('discountedPrice').value = '';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('editingId').value = '';
+            document.getElementById('formTitle').textContent = 'Add New Product';
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>
