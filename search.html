@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Search - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-accent: #ff4d8d;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .search-container { max-width: 480px; margin: 0 auto; padding: 20px; }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 14px 18px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .search-btn {
+            background: var(--pink-accent);
+            border: none;
+            padding: 14px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .filter-chip.active { background: var(--pink-accent); }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .result-image { width: 100%; height: 180px; object-fit: cover; }
+        .result-info { padding: 12px; }
+        .result-name { font-weight: 600; font-size: 14px; }
+        .result-price { color: var(--pink-accent); font-weight: 700; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Search fashion..." id="searchInput" oninput="searchProducts()">
+            <button class="search-btn" onclick="searchProducts()"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="filter-chips">
+            <div class="filter-chip active" onclick="setFilter('all', this)">All</div>
+            <div class="filter-chip" onclick="setFilter('women', this)">Women</div>
+            <div class="filter-chip" onclick="setFilter('men', this)">Men</div>
+            <div class="filter-chip" onclick="setFilter('kids', this)">Kids</div>
+        </div>
+
+        <div class="search-results" id="searchResults">
+            <p style="color:var(--text-secondary);">Start searching for products...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        let allProducts = [];
+        let currentFilter = 'all';
+
+        async function loadAllProducts() {
+            allProducts = await fetchProducts();
+        }
+
+        window.searchProducts = function() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            let results = allProducts;
+            
+            if (query) {
+                results = results.filter(p => p.name.toLowerCase().includes(query));
+            }
+            
+            if (currentFilter !== 'all') {
+                results = results.filter(p => p.category === currentFilter);
+            }
+
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p style="color:#666;">No products found</p>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = results.map(p => `
+                <div class="result-card" onclick="window.location.href='product.html?id=${p.id}'">
+                    <img src="${p.images?.[0] || 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400'}" 
+                         alt="${p.name}" class="result-image">
+                    <div class="result-info">
+                        <div class="result-name">${p.name}</div>
+                        <div class="result-price">${formatPrice(p.discounted_price)}</div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.setFilter = function(filter, element) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            element.classList.add('active');
+            searchProducts();
+        };
+
+        loadAllProducts();
+    </script>
+</body>
+</html>
