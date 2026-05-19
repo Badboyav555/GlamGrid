@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Wishlist - GlamGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-card: #1f1f26;
+            --pink-accent: #ff4d8d;
+            --text-primary: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container { max-width: 480px; margin: 0 auto; }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-info { padding: 12px; }
+        .product-name { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+        .price { color: var(--pink-accent); font-weight: 700; }
+
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1 style="margin-bottom: 24px;">My Wishlist ❤️</h1>
+        <div class="product-grid" id="wishlistGrid"></div>
+        <div id="emptyWishlist" style="text-align:center; padding:60px 20px; display:none;">
+            <i class="fas fa-heart-broken" style="font-size:64px; color:#666;"></i>
+            <h2>No items in wishlist</h2>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        const wishlistIds = getWishlist();
+        const wishlistGrid = document.getElementById('wishlistGrid');
+        const emptyWishlist = document.getElementById('emptyWishlist');
+
+        if (wishlistIds.length === 0) {
+            emptyWishlist.style.display = 'block';
+        } else {
+            const demoProducts = [
+                { id: '1', name: 'Silk Kurta', price: 999, image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400' },
+                { id: '2', name: 'Designer Saree', price: 799, image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400' },
+            ];
+            
+            wishlistGrid.innerHTML = demoProducts.map(p => `
+                <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'">
+                    <img src="${p.image}" alt="${p.name}" class="product-image">
+                    <button class="remove-btn" onclick="removeFromWishlist(event, '${p.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="price">${formatPrice(p.price)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.removeFromWishlist = function(event, productId) {
+            event.stopPropagation();
+            let wishlist = getWishlist();
+            wishlist = wishlist.filter(id => id !== productId);
+            saveWishlist(wishlist);
+            location.reload();
+        };
+    </script>
+</body>
+</html>
